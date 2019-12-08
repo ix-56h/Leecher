@@ -3,8 +3,6 @@
 			* Proceed basic tests for this CMS with dedicated tool (like WPScan) or
 			   with custom tests if no tools exist
 
-*			Implement Sublist3r (https://github.com/aboul3la/Sublist3r)
-			* Get all subdomains and apply recursively the scanner
 
 * Use WPScan if Wordpress are used
 

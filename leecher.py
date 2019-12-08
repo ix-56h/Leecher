@@ -6,6 +6,9 @@ import argparse, requests
 import sublist3r
 from art import *
 
+silent_mod = True
+verbose_mod = False
+status_accepted = [200, 403, 402, 503, 505]
 basic_tests =   [
                 ".htaccess",
                 ".htaccess~",
@@ -18,40 +21,92 @@ basic_tests =   [
                 "config/readme.txt"
                 ]
 
-class   Leecher:
-    def __init__(self):
+def print_header():
         ascii_header = text2art("LEECHER", "rand")
         print(ascii_header)
         print("\t\t\tAutomated Security Audit\n")
+
+def format_scheme(domain):
+    if not ("http://" or "https://") in domain:
+        domain = "http://"+domain
+    return domain
+
+def make_request(domain):
+    try:
+        response = requests.get("https://"+domain, allow_redirects=False, verify=False, timeout=5)
+        if not response:
+            response = requests.get("http://"+domain, allow_redirects=False, verify=False, timeout=5)
+        return response
+    except:
+        return None 
+
+class   Leecher:
+    def __init__(self):
+        print_header()
         parser = argparse.ArgumentParser()
         parser.add_argument("-t", "--target", help="Set the target") 
         parser.add_argument("--full-check", help="Make a recursive check for all subdomains for all CMS", action="store_true")
+        parser.add_argument("-s", "--silent", help="Disable modules output", action="store_true")
+        parser.add_argument("-v", "--verbose", help="Verbose mod", action="store_true")
         self.args = parser.parse_args()
+        if not self.args.silent:
+            silent_mod = False
+        if self.args.verbose:
+            verbose_mod = True 
         if not self.args.target:
             parser.error("Target needed")
 
     def launch_scan(self):
-        #self.check_domain(self, args.target)
-        self.sublister_wrapper(self.args.target)
-        return
+        subdomains = self.sublister_wrapper(self.args.target)
+        self.process_scan(subdomains)
 
     def sublister_wrapper(self, domain):
         print("Launching Sublist3r...")
-        subdomains = sublist3r.main(
+        try:
+            subdomains = sublist3r.main(
                     domain,
                     40,
                     None,
                     ports=None,
-                    silent=True, verbose=False, enable_bruteforce=False, engines=None
+                    silent=silent_mod, verbose=verbose_mod, enable_bruteforce=False, engines=None
                     )
-        print(subdomains)
-        return
+            subdomains.insert(0, domain)
+            print("Subdomains founds :")
+            print(subdomains)
+            return subdomains
+        except:
+            sys.exit("Error while processing Sublist3r");
 
-    def check_domain(self, domain_url):
-        print("Check server status...")
-        #if fail to connect go to next 
-        #else check basic_tests and check if CMS are used and check versionning
-        return
+    def process_scan(self, subdomains):
+        for domain in subdomains:
+            response = self.check_domain(domain)
+            if not response:
+               continue
+            if response.status_code in status_accepted:
+                print("[%s] is responding" % domain)
+                self.process_basic_tests(domain)
+            else:
+                print("[%s] is not responding" % domain)
+                continue
+
+    def check_domain(self, domain):
+        try:
+            response = requests.get("https://"+domain, verify=False, timeout=5)
+            if not response:
+                response = requests.get("http://"+domain, verify=False, timeout=5)
+            return response
+        except:
+           return None 
+
+    def process_basic_tests(self, domain):
+        for test in basic_tests:
+            response = make_request(domain+'/'+test)
+            if response == None:
+                continue
+            if response.status_code in status_accepted:
+                print("[%s/%s] succeed" % (domain, test))
+            else:
+                print("[%s/%s] failed" % (domain, test))
 
     def wpscan_wrapper(self):
         print("WPScan processing...")
