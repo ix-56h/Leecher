@@ -1,0 +1,18 @@
+*			Detect cms
+			* Detect version
+			* Proceed basic tests for this CMS with dedicated tool (like WPScan) or
+			   with custom tests if no tools exist
+
+*			Implement Sublist3r (https://github.com/aboul3la/Sublist3r)
+			* Get all subdomains and apply recursively the scanner
+
+* Use WPScan if Wordpress are used
+
+Output of the data :
+
+|	DOMAIN	|	CMS USED	|	TEST		|	RESULT	|
+|-------------------------------------------------------|
+|	x.x		|	N/A			|	BASIC_TESTS	|	✓✓✓✓✓	|
+|	url.x.x	|	WP v3.4.X	|	BASIC_TESTS	|	XXXXX	|
+|	wp.x.x	|	WP v3.4.X	|	WP_TESTS	|	✓✓✓✓✓	|
+
