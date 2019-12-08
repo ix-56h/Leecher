@@ -31,11 +31,11 @@ def format_scheme(domain):
         domain = "http://"+domain
     return domain
 
-def make_request(domain):
+def make_request(domain, redirect):
     try:
-        response = requests.get("https://"+domain, allow_redirects=False, verify=False, timeout=5)
+        response = requests.get("https://"+domain, allow_redirects=redirect, verify=False, timeout=5)
         if not response:
-            response = requests.get("http://"+domain, allow_redirects=False, verify=False, timeout=5)
+            response = requests.get("http://"+domain, allow_redirects=redirect, verify=False, timeout=5)
         return response
     except:
         return None 
@@ -79,7 +79,7 @@ class   Leecher:
 
     def process_scan(self, subdomains):
         for domain in subdomains:
-            response = self.check_domain(domain)
+            response = make_request(domain, True)
             if not response:
                continue
             if response.status_code in status_accepted:
@@ -89,18 +89,9 @@ class   Leecher:
                 print("[%s] is not responding" % domain)
                 continue
 
-    def check_domain(self, domain):
-        try:
-            response = requests.get("https://"+domain, verify=False, timeout=5)
-            if not response:
-                response = requests.get("http://"+domain, verify=False, timeout=5)
-            return response
-        except:
-           return None 
-
     def process_basic_tests(self, domain):
         for test in basic_tests:
-            response = make_request(domain+'/'+test)
+            response = make_request(domain+'/'+test, False)
             if response == None:
                 continue
             if response.status_code in status_accepted:
