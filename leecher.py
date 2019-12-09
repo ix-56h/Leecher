@@ -25,6 +25,8 @@ def fucking_false_positive(response):
     if response.status_code == 200:
         if response.content == None:
             return True
+        if ("404" or "Not found" or "not found") in response.content:
+            return False
     return False
 
 def print_header():
