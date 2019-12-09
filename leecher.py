@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 import sys
 sys.path.append('Sublist3r')
-
 import argparse, requests
 import sublist3r
 from art import *
 
-silent_mod = True
-verbose_mod = False
 status_accepted = [200, 403, 402, 404, 503, 505]
 basic_tests =   [
                 ".htaccess",
@@ -25,7 +22,7 @@ def fucking_false_positive(response):
     if response.status_code == 200:
         if response.content == None:
             return True
-        if ("404" or "Not found" or "not found") in response.content:
+        if (b"404" or b"Not found" or b"not found") in response.content:
             return False
     return False
 
@@ -49,13 +46,9 @@ class   Leecher:
         parser = argparse.ArgumentParser()
         parser.add_argument("-t", "--target", help="Set the target") 
         parser.add_argument("--full-check", help="Make a recursive check for all subdomains for all CMS", action="store_true")
-        parser.add_argument("-s", "--silent", help="Disable modules output", action="store_true")
-        parser.add_argument("-v", "--verbose", help="Verbose mod", action="store_true")
+        parser.add_argument("-s", "--silent", help="Disable modules output", default=False, action="store_true")
+        parser.add_argument("-v", "--verbose", help="Verbose mod", default=False, action="store_true")
         self.args = parser.parse_args()
-        if not self.args.silent:
-            silent_mod = False
-        if self.args.verbose:
-            verbose_mod = True 
         if not self.args.target:
             parser.error("Target needed")
 
@@ -71,7 +64,7 @@ class   Leecher:
                     40,
                     None,
                     ports=None,
-                    silent=False, verbose=False, enable_bruteforce=False, engines=None
+                    silent=self.args.silent, verbose=self.args.verbose, enable_bruteforce=False, engines=None
                     )
             subdomains.insert(0, domain)
             print("Subdomains founds :")
