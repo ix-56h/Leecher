@@ -1,4 +1,4 @@
-*			Detect cms (https://whatcms.org)
+*			Detect cms (https://github.com/Tuhinshubhra/CMSeeK)
 			* Detect version
 			* Proceed basic tests for this CMS with dedicated tool (like WPScan) or
 			   with custom tests if no tools exist
