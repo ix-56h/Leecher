@@ -3,6 +3,7 @@ import sys
 sys.path.append('Sublist3r')
 import argparse, requests
 import sublist3r
+from colorama import Fore
 from art import *
 
 status_accepted = [200, 403, 402, 404, 503, 505]
@@ -54,6 +55,7 @@ class   Leecher:
 
     def launch_scan(self):
         subdomains = self.sublister_wrapper(self.args.target)
+        print("\nLet's h4ck\n")
         self.process_scan(subdomains)
 
     def sublister_wrapper(self, domain):
@@ -67,8 +69,9 @@ class   Leecher:
                     silent=self.args.silent, verbose=self.args.verbose, enable_bruteforce=False, engines=None
                     )
             subdomains.insert(0, domain)
-            print("Subdomains founds :")
-            print(subdomains)
+            if self.args.verbose:
+                print("Subdomains founds :")
+                print(subdomains)
             return subdomains
         except:
             sys.exit("Error while processing Sublist3r");
@@ -76,24 +79,23 @@ class   Leecher:
     def process_scan(self, subdomains):
         for domain in subdomains:
             response = make_request(domain, True)
-            if not response:
-               continue
-            if response.status_code in status_accepted:
-                print("[%s] is responding" % domain)
-                self.process_basic_tests(domain)
-            else:
-            #    print("[%s] is not responding" % domain)
-                continue
+            if response:
+                if response.status_code in status_accepted:
+                    print("[" + Fore.YELLOW + "+" + Fore.RESET + "] [%s] is responding" % domain)
+                    self.process_basic_tests(domain)
+                else:
+                    if self.args.verbose:
+                        print("[" + Fore.RED + "-" + Fore.RESET + "] [%s] is not responding" % domain)
 
     def process_basic_tests(self, domain):
         for test in basic_tests:
             response = make_request(domain+'/'+test, False)
-            if response == None:
-                continue
-            if response.status_code == 200 and not fucking_false_positive(response):
-                print("[%s/%s] succeed" % (domain, test))
-            #else:
-            #    print("[%s/%s] failed" % (domain, test))
+            if response is not None:
+                if response.status_code == 200 and not fucking_false_positive(response):
+                    print("[" + Fore.GREEN + "✓" + Fore.RESET + "]\t[%s/%s] succeed" % (domain, test))
+                else:
+                    if self.args.verbose:
+                        print("[" + Fore.RED + "X" + Fore.RESET + "]\t[%s/%s] failed" % (domain, test))
 
     def wpscan_wrapper(self):
         print("WPScan processing...")
