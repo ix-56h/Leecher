@@ -8,7 +8,7 @@ from art import *
 
 silent_mod = True
 verbose_mod = False
-status_accepted = [200, 403, 402, 503, 505]
+status_accepted = [200, 403, 402, 404, 503, 505]
 basic_tests =   [
                 ".htaccess",
                 ".htaccess~",
@@ -21,15 +21,16 @@ basic_tests =   [
                 "config/readme.txt"
                 ]
 
+def fucking_false_positive(response):
+    if response.status_code == 200:
+        if response.content == None:
+            return True
+    return False
+
 def print_header():
         ascii_header = text2art("LEECHER", "rand")
         print(ascii_header)
         print("\t\t\tAutomated Security Audit\n")
-
-def format_scheme(domain):
-    if not ("http://" or "https://") in domain:
-        domain = "http://"+domain
-    return domain
 
 def make_request(domain, redirect):
     try:
@@ -68,7 +69,7 @@ class   Leecher:
                     40,
                     None,
                     ports=None,
-                    silent=silent_mod, verbose=verbose_mod, enable_bruteforce=False, engines=None
+                    silent=False, verbose=False, enable_bruteforce=False, engines=None
                     )
             subdomains.insert(0, domain)
             print("Subdomains founds :")
@@ -86,7 +87,7 @@ class   Leecher:
                 print("[%s] is responding" % domain)
                 self.process_basic_tests(domain)
             else:
-                print("[%s] is not responding" % domain)
+            #    print("[%s] is not responding" % domain)
                 continue
 
     def process_basic_tests(self, domain):
@@ -94,10 +95,10 @@ class   Leecher:
             response = make_request(domain+'/'+test, False)
             if response == None:
                 continue
-            if response.status_code in status_accepted:
+            if response.status_code == 200 and not fucking_false_positive(response):
                 print("[%s/%s] succeed" % (domain, test))
-            else:
-                print("[%s/%s] failed" % (domain, test))
+            #else:
+            #    print("[%s/%s] failed" % (domain, test))
 
     def wpscan_wrapper(self):
         print("WPScan processing...")
@@ -107,5 +108,6 @@ class   Leecher:
 def     leecher_launch():
     instance = Leecher()
     instance.launch_scan()
+
 if __name__ == '__main__':
     leecher_launch()
