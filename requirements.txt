@@ -2,3 +2,4 @@ requests
 argparse
 art
 colorama
+bs4
