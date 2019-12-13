@@ -1,4 +1,6 @@
 requests
 argparse
+bs4
 art
 colorama
+selenium
